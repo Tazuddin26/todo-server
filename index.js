@@ -1,27 +1,28 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const http = require("http");
-const { Server } = require("socket.io");
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const req = require("express/lib/request");
-const { Socket } = require("dgram");
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
-  },
-});
-
-io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
-
-  socket.on("disconnect", () => {
-    console.log("A user disconnected:", socket.id);
-  });
-});
+// const http = require("http");
+// const server = http.createServer(app);
+// const { Server } = require("socket.io");
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173",
+//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+//   })
+// );
+// const server = http.createServer(app);
+// const io = new Server(server, {
+//   cors: {
+//     origin: " http://localhost:5173", // https://todo-client-bef17.web.app
+//     methods: ["GET", "POST"],
+//   },
+// });
+// io.on("connection", (socket) => {
+//   console.log(`user Connected: ${socket.id}`);
+// });
 const port = process.env.PORT || 5100;
 
 app.use(cors());
@@ -65,7 +66,7 @@ async function run() {
         createdTime: time,
       };
       const result = await taskCollection.insertOne(newTask);
-      //   io.emit("taskAdded", task);
+      // io.emit("taskAdded", task);
       res.status(201).send(result);
     });
 
@@ -79,6 +80,17 @@ async function run() {
           category: task.category,
           description: task.description,
         },
+      };
+      const result = await taskCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    app.patch("/task/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("todo id", id);
+      const { category } = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateDoc = {
+        $set: { category },
       };
       const result = await taskCollection.updateOne(filter, updateDoc);
       res.send(result);
@@ -117,3 +129,7 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
+
+// server.listen(port, () => {
+//   console.log(`Example app listening at http://localhost:${port}`);
+// });
