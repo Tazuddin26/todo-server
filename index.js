@@ -46,7 +46,7 @@ io.on("connection", (socket) => {
 
 const port = process.env.PORT || 5200;
 
-// app.use(cors());
+app.use(cors());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.z4uro.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -123,7 +123,7 @@ async function run() {
       const taskId = req.params.id;
       const query = { _id: new ObjectId(taskId) };
       const result = await taskCollection.deleteOne(query);
-      if (result.deletedCount === 1) {
+      if (result.deletedCount > 0) {
         io.emit("taskDelete", taskId);
         res.send({
           success: true,
