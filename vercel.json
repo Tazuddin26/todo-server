@@ -13,10 +13,5 @@
       "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
     }
   ],
-  "rewrites": [
-    {
-      "source": "/socket.io/(.*)",
-      "destination": "https://todo-server-rho-bice.vercel.app/socket.io/$1"
-    }
-  ]
+  
 }

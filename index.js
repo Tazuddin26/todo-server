@@ -4,28 +4,45 @@ const cors = require("cors");
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const req = require("express/lib/request");
-// const http = require("http");
-// const server = http.createServer(app);
-// const { Server } = require("socket.io");
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173",
-//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-//   })
-// );
-// const server = http.createServer(app);
-// const io = new Server(server, {
-//   cors: {
-//     origin: " http://localhost:5173", // https://todo-client-bef17.web.app
-//     methods: ["GET", "POST"],
-//   },
-// });
-// io.on("connection", (socket) => {
-//   console.log(`user Connected: ${socket.id}`);
-// });
-const port = process.env.PORT || 5100;
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://todo-client-bef17.web.app",
+];
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
+//Socket io
+const http = require("http");
+const { Server } = require("socket.io");
+const server = http.createServer(app);
+// const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  },
+});
+io.on("connection", (socket) => {
+  console.log("A user connected", socket.id);
 
-app.use(cors());
+  socket.on("updateTask", ({ taskId, newCategory }) => {
+    console.log("Task updated:", taskId, newCategory);
+    io.emit("taskUpdated", { taskId, newCategory });
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected", socket.id);
+  });
+});
+
+const port = process.env.PORT || 5200;
+
+// app.use(cors());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.z4uro.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -93,6 +110,8 @@ async function run() {
         $set: { category },
       };
       const result = await taskCollection.updateOne(filter, updateDoc);
+      // io.emit("taskUpdated", { taskId: id, newCategory: category });
+      io.emit("taskUpdated", result);
       res.send(result);
     });
 
@@ -126,10 +145,10 @@ app.get("/", (req, res) => {
   res.send("Hello ToDo!");
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
-});
-
-// server.listen(port, () => {
+// app.listen(port, () => {
 //   console.log(`Example app listening at http://localhost:${port}`);
 // });
+
+server.listen(port, () => {
+  console.log(`Example app listening at http://localhost:${port}`);
+});
