@@ -34,6 +34,10 @@ io.on("connection", (socket) => {
     console.log("Task updated:", taskId, newCategory);
     io.emit("taskUpdated", { taskId, newCategory });
   });
+  socket.on("taskDelete", ({ taskId }) => {
+    console.log("task Delete:", taskId);
+    io.emit("taskDelete", taskId);
+  });
 
   socket.on("disconnect", () => {
     console.log("User disconnected", socket.id);
@@ -119,6 +123,17 @@ async function run() {
       const taskId = req.params.id;
       const query = { _id: new ObjectId(taskId) };
       const result = await taskCollection.deleteOne(query);
+      if (result.deletedCount === 1) {
+        io.emit("taskDelete", taskId);
+        res.send({
+          success: true,
+          message: "Task deleted successfully",
+          taskId,
+        });
+      } else {
+        res.status(404).send({ success: false, message: "Task not found" });
+      }
+
       res.send(result);
     });
 
