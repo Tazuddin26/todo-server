@@ -124,7 +124,7 @@ async function run() {
       const taskId = req.params.id;
       const query = { _id: new ObjectId(taskId) };
       const result = await taskCollection.deleteOne(query);
-      if (result.deletedCount === 1) {
+      if (result.deletedCount > 0) {
         io.emit("taskDelete", taskId);
         res.send({
           success: true,
