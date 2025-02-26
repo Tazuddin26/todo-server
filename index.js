@@ -34,7 +34,7 @@ io.on("connection", (socket) => {
     console.log("Task updated:", taskId, newCategory);
     io.emit("taskUpdated", { taskId, newCategory });
   });
-  socket.on("taskDelete", ({ data }) => {
+  socket.on("taskDelete", ( data ) => {
     const taskId = data.taskId;
     console.log("Task deleted:", taskId);
     io.emit("taskDeleted", { taskId });
@@ -47,7 +47,7 @@ io.on("connection", (socket) => {
 
 const port = process.env.PORT || 5200;
 
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.z4uro.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -115,7 +115,6 @@ async function run() {
         $set: { category },
       };
       const result = await taskCollection.updateOne(filter, updateDoc);
-      // io.emit("taskUpdated", { taskId: id, newCategory: category });
       io.emit("taskUpdated", result);
       res.send(result);
     });
@@ -135,7 +134,7 @@ async function run() {
         res.status(404).send({ success: false, message: "Task not found" });
       }
 
-      res.send(result);
+      // res.send(result);
     });
 
     //Users Realted Api
