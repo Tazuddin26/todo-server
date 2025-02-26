@@ -34,10 +34,15 @@ io.on("connection", (socket) => {
     console.log("Task updated:", taskId, newCategory);
     io.emit("taskUpdated", { taskId, newCategory });
   });
-  socket.on("taskDelete", ( data ) => {
+  socket.on("taskDelete", (data) => {
     const taskId = data.taskId;
     console.log("Task deleted:", taskId);
     io.emit("taskDeleted", { taskId });
+  });
+
+  socket.on("tasksUpdate", ({ taskId,updatedTasks}) => {
+    console.log("Task updated:", taskId,updatedTasks);
+    io.emit("tasksUpdate", { taskId,updatedTasks});
   });
 
   socket.on("disconnect", () => {
@@ -104,6 +109,7 @@ async function run() {
         },
       };
       const result = await taskCollection.updateOne(filter, updateDoc);
+      io.emit("tasksUpdate",{taskId:id,updatedTasks:task})
       res.send(result);
     });
     app.patch("/task/:id", async (req, res) => {
