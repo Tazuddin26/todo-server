@@ -40,9 +40,9 @@ io.on("connection", (socket) => {
     io.emit("taskDeleted", { taskId });
   });
 
-  socket.on("tasksUpdate", ({ taskId,updatedTasks}) => {
-    console.log("Task updated:", taskId,updatedTasks);
-    io.emit("tasksUpdate", { taskId,updatedTasks});
+  socket.on("tasksUpdate", ({ taskId, updatedTasks }) => {
+    console.log("Task updated:", taskId, updatedTasks);
+    io.emit("tasksUpdate", { taskId, updatedTasks });
   });
 
   socket.on("disconnect", () => {
@@ -93,7 +93,9 @@ async function run() {
         createdTime: time,
       };
       const result = await taskCollection.insertOne(newTask);
-      // io.emit("taskAdded", task);
+      if (result.acknowledged) {
+        io.emit("taskAdded", { ...newTask, _id: result.insertedId });
+      }
       res.status(201).send(result);
     });
 
@@ -109,7 +111,7 @@ async function run() {
         },
       };
       const result = await taskCollection.updateOne(filter, updateDoc);
-      io.emit("tasksUpdate",{taskId:id,updatedTasks:task})
+      io.emit("tasksUpdate", { taskId: id, updatedTasks: task });
       res.send(result);
     });
     app.patch("/task/:id", async (req, res) => {
